@@ -1,0 +1,10 @@
+# Enable mod_rewrite
+RewriteEngine On
+
+# Cache Busting: Rewrite filenames with timestamps for static resources
+RewriteRule ^(.*)\.[\d]{10}\.(css|js)$ $1.$2 [L]
+
+# Redirect all requests that do not correspond to actual files or directories to index.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ /index.php?$1 [L,QSA]

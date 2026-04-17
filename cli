@@ -1,0 +1,93 @@
+#!/usr/bin/env php
+
+<?php
+
+use Doctrine\ORM\Tools\Console\ConsoleRunner;
+use Doctrine\ORM\Tools\Console\EntityManagerProvider\SingleManagerProvider;
+use Dotenv\Dotenv;
+use Symfony\Component\Console\Application;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
+use App\Config\ORM;
+
+require 'vendor/autoload.php';
+
+// Load our environment variables from the .env file:
+Dotenv::createImmutable(__DIR__)->load();
+
+require_once 'app/Config/Constants.php';
+require 'app/Config/ORM.php';
+
+$ORM = new ORM();
+$entityManager = $ORM->getProvider();
+
+$app = new Application('Nomina Express CLI', 'v1.0.0');
+
+ConsoleRunner::addCommands($app, new SingleManagerProvider($entityManager));
+
+$app
+    ->register('db:seed')
+    ->setDescription('Seed the database with initial data')
+    ->setCode(function (InputInterface $input, OutputInterface $output) use ($entityManager) {
+        $txt = '';
+        exec('php cli orm:schema-tool:drop -f', $txt);
+        exec('php cli db:update', $txt);
+
+        $seeders = \App\Seeders\BaseSeeder::ORDER;
+
+        foreach ($seeders as $seeder) {
+            $seederInstance = new $seeder($entityManager);
+            if (method_exists($seederInstance, 'run')) {
+                $seederInstance->run();
+            }
+        }
+
+        $output->writeln($txt);
+        $output->writeln('Database seeded successfully!');
+    });
+
+$app
+    ->register('db:update')
+    ->setDescription('Update the schema')
+    ->setCode(function (InputInterface $input, OutputInterface $output) {
+        $txt = '';
+        exec('php cli orm:schema-tool:update -f', $txt);
+        exec('find /tmp -name "*.php*" -type f -delete', $txt);
+        $output->writeln($txt);
+    });
+
+$app
+    ->register('app:test')
+    ->addOption('filter', 'f', InputOption::VALUE_OPTIONAL, 'Filter by test class or method name')
+    ->setDescription('Run PHPUnit tests')
+    ->setCode(function (InputInterface $input, OutputInterface $output) {
+        $txt = '';
+
+        // Check if current ENVIRONMENT is "testing",
+        // otherwise, change it to "testing" temporarily
+        if (!\App\Config\Application::isTesting()) {
+            $env = file_get_contents('.env');
+            $currentEnvironment = null;
+            preg_match('/^ENVIRONMENT=(.*)$/m', $env, $currentEnvironment);
+            $env = preg_replace('/^ENVIRONMENT=.*$/m', 'ENVIRONMENT=testing', $env);
+            file_put_contents('.env', $env);
+        }
+
+        $cmd = './vendor/bin/phpunit tests';
+        if ($input->getOption('filter')) {
+            $cmd .= ' --filter ' . $input->getOption('filter');
+        }
+        exec($cmd, $txt);
+
+        // Set back the original environment if it was changed
+        if (isset($currentEnvironment[1])) {
+            $env = file_get_contents('.env');
+            $env = preg_replace('/^ENVIRONMENT=.*$/m', 'ENVIRONMENT=' . $currentEnvironment[1], $env);
+            file_put_contents('.env', $env);
+        }
+
+        $output->writeln($txt);
+    });
+
+$app->run();

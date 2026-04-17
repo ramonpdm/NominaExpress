@@ -1,0 +1,32 @@
+services:
+  php:
+    build: .
+    container_name: nomina_express_app
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      - mysql
+    restart: unless-stopped
+    environment:
+      PHP_IDE_CONFIG: "serverName=host.docker.internal:8080"
+
+  mysql:
+    image: mysql:8.0
+    container_name: nomina_express_db
+    environment:
+      MYSQL_ROOT_PASSWORD: root1234
+      MYSQL_DATABASE: nomina_express
+      MYSQL_USER: nomina
+      MYSQL_PASSWORD: 1234
+    # Puerto 3309 en el host → para conectar desde MySQL Workbench
+    # (localhost:3309, usuario root / root1234  ó  nomina / 1234)
+    ports:
+      - "3309:3306"
+    volumes:
+      - nomina_mysql_data:/var/lib/mysql
+    restart: unless-stopped
+
+volumes:
+  nomina_mysql_data:
