@@ -63,20 +63,38 @@ A continuación se explica la estructura del proyecto y dónde extender sus func
 
 ### 1. Rutas (`app/Config/Routes.php`)
 Las rutas mapean las URLs a los controladores. Determinan qué código se ejecuta cuando llega una petición HTTP.
-- Ejemplo: `Route::add('/empleados', $this->call(\App\Controllers\Frontend\EmpleadosController::class, 'index'));`
+Ejemplo:
+```php
+Route::add('/empleados', $this->call(\App\Controllers\Frontend\EmpleadosController::class, 'index'));
+```
 
 ### 2. Controladores (`app/Controllers/`)
 Contienen la lógica de negocio. Reciben las peticiones, coordinan con los servicios y repositorios, y devuelven una vista o redirección.
-- Ejemplo: `app/Controllers/Frontend/PeriodosController.php` maneja la apertura, validación y transición a PAGADO de las nóminas.
+Ejemplo:
+```php
+// app/Controllers/Frontend/PeriodosController.php
+public function cerrar(int $id): string { ... }
+```
 
 ### 3. Entidades y Enums (`app/Entities/`, `app/Enums/`)
-Representan el modelo de la base de datos usando atributos de Doctrine ORM (`#[ORM\Column]`, etc.).
-- Ejemplos: `Empleado.php`, `PeriodoNomina.php`, `Nomina.php`.
-- Enums: Centralizan estados fijos (ej: `EstadoPeriodo::ABIERTO`, `TipoPeriodo::QUINCENAL`).
+Representan el modelo de la base de datos usando atributos de Doctrine ORM.
+Ejemplos de entidades:
+```php
+#[ORM\Entity]
+class Empleado { ... }
+```
+Enums: Centralizan estados fijos.
+```php
+enum EstadoPeriodo: string { case ABIERTO = 'abierto'; }
+```
 
 ### 4. Servicios (`app/Services/`)
 Contienen lógica compleja y cálculos pesados para mantener los controladores limpios.
-- Ejemplo: `NominaCalculator.php` procesa los cálculos de deducciones de forma masiva o individual.
+Ejemplo de procesamiento masivo:
+```php
+// app/Services/NominaCalculator.php
+$calculator->procesarPeriodo($periodo);
+```
 
 ### 5. Vistas (`app/Views/`)
 Plantillas HTML renderizadas en el servidor con PHP. 
@@ -85,6 +103,14 @@ Plantillas HTML renderizadas en el servidor con PHP.
 
 ## Cómo Extender Funcionalidades
 
-- **Añadir una nueva vista/ruta:** Registra la URL en `Routes.php`, crea el método en un controlador, y diseña la plantilla en `Views/`.
-- **Modificar la Base de Datos:** Actualiza los atributos PHP en los archivos dentro de `Entities/` y luego ejecuta `./cli db:update`.
-- **Añadir reglas de negocio:** Si vas a crear cálculos complejos de deducciones o reportes personalizados, añade la lógica en `Services/`.
+- **Añadir una nueva vista/ruta:** 
+  1. Registra la URL en `Routes.php`
+  2. Crea el método en un controlador
+  3. Diseña la plantilla en `Views/`
+- **Modificar la Base de Datos:** 
+  Actualiza los atributos PHP dentro de `Entities/` y luego ejecuta:
+  ```bash
+  ./cli db:update
+  ```
+- **Añadir reglas de negocio:** 
+  Si vas a crear cálculos complejos de deducciones o reportes personalizados, añade la lógica en `Services/`.
