@@ -16,10 +16,14 @@ $ultimoFinStr = $ultimoPeriodo ? $ultimoPeriodo->fecha_fin->format('Y-m-d') : da
 
 <?php include APP_VIEWS_DIR . '/inc/flash.php'; ?>
 
-<div class="ne-grid ne-grid--2">
+<div class="d-flex flex-column" style="gap: 1.5rem;">
     <?php if (Auth::user()->puedeEditar()): ?>
-    <div class="ne-card">
-        <div class="ne-card__title">Crear período</div>
+    <details class="ne-card">
+        <summary class="ne-card__title" style="cursor: pointer; margin: 0; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+            <span><i class="bi bi-plus-circle" style="margin-right: 0.5rem;"></i> Crear Nuevo Período</span>
+            <i class="bi bi-chevron-down"></i>
+        </summary>
+        <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border, #e2e8f0);">
         <form method="post" action="/periodos">
             <div class="ne-form-group">
                 <label class="ne-form-label">Nombre *</label>
@@ -49,7 +53,8 @@ $ultimoFinStr = $ultimoPeriodo ? $ultimoPeriodo->fecha_fin->format('Y-m-d') : da
             </div>
             <button class="ne-btn ne-btn--primary"><i class="bi bi-plus-lg"></i> Crear</button>
         </form>
-    </div>
+        </div>
+    </details>
     <?php endif; ?>
 
     <div class="ne-card">
