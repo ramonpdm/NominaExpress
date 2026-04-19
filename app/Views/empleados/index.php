@@ -15,16 +15,89 @@ include APP_VIEWS_DIR . '/inc/header.php';
 
 <?php include APP_VIEWS_DIR . '/inc/flash.php'; ?>
 
+<?php
+// Extraer valores únicos para los filtros
+$salariosUnicos = array_unique(array_map(fn($e) => $e->salario, $empleados));
+rsort($salariosUnicos);
+
+$departamentosUnicos = array_unique(array_map(fn($e) => $e->departamento->nombre, $empleados));
+sort($departamentosUnicos);
+
+$cargosUnicos = array_unique(array_map(fn($e) => $e->cargo->nombre, $empleados));
+sort($cargosUnicos);
+?>
+
 <div class="ne-card mb-3">
     <div class="d-flex gap-2" style="flex-wrap: wrap;">
         <input type="text" class="ne-form-control" style="flex:1; min-width: 240px;"
-               placeholder="Filtrar por nombre, cédula, departamento..."
-               data-filter-table="tabla-empleados">
-        <a href="?orden=nombres"       class="ne-btn ne-btn--<?= $ordenActual === 'nombres' ? 'primary' : 'secondary' ?>">Nombre</a>
-        <a href="?orden=salario"       class="ne-btn ne-btn--<?= $ordenActual === 'salario' ? 'primary' : 'secondary' ?>">Salario</a>
-        <a href="?orden=fecha_ingreso" class="ne-btn ne-btn--<?= $ordenActual === 'fecha_ingreso' ? 'primary' : 'secondary' ?>">Fecha ingreso</a>
+               placeholder="Buscar empleado por cualquier dato..."
+               id="filter-search">
+        
+        <select class="ne-form-control" style="width: auto;" id="filter-depto">
+            <option value="">Todos los Departamentos</option>
+            <?php foreach($departamentosUnicos as $d): ?>
+                <option value="<?= htmlspecialchars($d) ?>"><?= htmlspecialchars($d) ?></option>
+            <?php endforeach; ?>
+        </select>
+
+        <select class="ne-form-control" style="width: auto;" id="filter-cargo">
+            <option value="">Todos los Cargos</option>
+            <?php foreach($cargosUnicos as $c): ?>
+                <option value="<?= htmlspecialchars($c) ?>"><?= htmlspecialchars($c) ?></option>
+            <?php endforeach; ?>
+        </select>
+
+        <select class="ne-form-control" style="width: auto;" id="filter-salario">
+            <option value="">Cualquier Salario</option>
+            <?php foreach($salariosUnicos as $s): ?>
+                <option value="<?= htmlspecialchars($s) ?>">RD$ <?= number_format((float)$s, 2) ?></option>
+            <?php endforeach; ?>
+        </select>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('filter-search');
+    const deptoSelect = document.getElementById('filter-depto');
+    const cargoSelect = document.getElementById('filter-cargo');
+    const salarioSelect = document.getElementById('filter-salario');
+    const tableRows = document.querySelectorAll('#tabla-empleados tbody tr');
+
+    function filterTable() {
+        const q = searchInput.value.toLowerCase();
+        const depto = deptoSelect.value.toLowerCase();
+        const cargo = cargoSelect.value.toLowerCase();
+        // Format the selected salary to match the table's text format "RD$ X,XXX.XX" or just use the raw value if we match exactly.
+        // It's safer to compare formatted text.
+        const salarioOption = salarioSelect.options[salarioSelect.selectedIndex];
+        const salarioText = salarioOption.value === "" ? "" : salarioOption.text.toLowerCase();
+
+        tableRows.forEach(row => {
+            const rowText = row.textContent.toLowerCase();
+            const rowDepto = row.children[2].textContent.toLowerCase(); // Índice 2 = Departamento
+            const rowCargo = row.children[3].textContent.toLowerCase(); // Índice 3 = Cargo
+            const rowSalario = row.children[4].textContent.toLowerCase(); // Índice 4 = Salario
+
+            const matchSearch = rowText.includes(q);
+            const matchDepto = depto === "" || rowDepto === depto;
+            const matchCargo = cargo === "" || rowCargo === cargo;
+            const matchSalario = salarioText === "" || rowSalario.includes(salarioText);
+
+            if (matchSearch && matchDepto && matchCargo && matchSalario) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    searchInput.addEventListener('input', filterTable);
+    deptoSelect.addEventListener('change', filterTable);
+    cargoSelect.addEventListener('change', filterTable);
+    salarioSelect.addEventListener('change', filterTable);
+});
+</script>
 
 <table class="ne-table" id="tabla-empleados">
     <thead>
