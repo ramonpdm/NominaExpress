@@ -64,9 +64,19 @@ class PeriodosController extends BaseController
         $periodo = $em->getRepository(PeriodoNomina::class)->find($id);
 
         if ($periodo) {
-            $periodo->estado = EstadoPeriodo::CERRADO;
-            $em->flush();
-            $_SESSION['flash'] = ['tipo' => 'success', 'msg' => 'Período cerrado'];
+            $empleadosActivos = $em->getRepository(\App\Entities\Empleado::class)
+                ->count(['estado' => \App\Enums\EstadoEmpleado::ACTIVO, 'activo' => true]);
+            
+            $procesados = $periodo->nominas->count();
+
+            if ($procesados < $empleadosActivos) {
+                $faltantes = $empleadosActivos - $procesados;
+                $_SESSION['flash'] = ['tipo' => 'danger', 'msg' => "No se puede cerrar/pagar el período. Faltan $faltantes empleados por procesar."];
+            } else {
+                $periodo->estado = EstadoPeriodo::PAGADO;
+                $em->flush();
+                $_SESSION['flash'] = ['tipo' => 'success', 'msg' => 'Período cerrado y marcado como PAGADO exitosamente.'];
+            }
         }
 
         return $this->redirect('/periodos');
