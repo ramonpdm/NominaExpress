@@ -47,13 +47,13 @@ class Routes
         Route::add('/api/v1/(.*?)(?:/(.*?))?(?:/(.*?))?', $this->call(), ['get', 'post', 'put', 'patch', 'delete']);
 
         /* ---- AUTH ---- */
-        Route::add('/', $this->call([DashboardController::class]));
+        Route::add('/', $this->call([DashboardController::class, 'index']));
         Route::add('/login', $this->call([AuthController::class, 'login']));
         Route::add('/login', $this->call([AuthController::class, 'login']), method: 'post');
         Route::add('/logout', $this->call([AuthController::class, 'logout']));
 
         /* ---- EMPLEADOS ---- */
-        Route::add('/empleados', $this->call([EmpleadosController::class]));
+        Route::add('/empleados', $this->call([EmpleadosController::class, 'index']));
         Route::add('/empleados/nuevo', $this->call([EmpleadosController::class, 'nuevo']));
         Route::add('/empleados/nuevo', $this->call([EmpleadosController::class, 'guardar']), method: 'post');
         Route::add('/empleados/([0-9]+)', $this->call([EmpleadosController::class, 'ver']));
@@ -61,15 +61,15 @@ class Routes
         Route::add('/empleados/([0-9]+)/editar', $this->call([EmpleadosController::class, 'actualizar']), method: 'post');
 
         /* ---- ADMINISTRACIÓN ---- */
-        Route::add('/departamentos', $this->call([DepartamentosController::class]));
+        Route::add('/departamentos', $this->call([DepartamentosController::class, 'index']));
         Route::add('/departamentos', $this->call([DepartamentosController::class, 'guardar']), method: 'post');
-        Route::add('/cargos', $this->call([CargosController::class]));
+        Route::add('/cargos', $this->call([CargosController::class, 'index']));
         Route::add('/cargos', $this->call([CargosController::class, 'guardar']), method: 'post');
-        Route::add('/conceptos', $this->call([ConceptosController::class]));
+        Route::add('/conceptos', $this->call([ConceptosController::class, 'index']));
         Route::add('/conceptos', $this->call([ConceptosController::class, 'guardar']), method: 'post');
 
         /* ---- NÓMINA ---- */
-        Route::add('/periodos', $this->call([PeriodosController::class]));
+        Route::add('/periodos', $this->call([PeriodosController::class, 'index']));
         Route::add('/periodos', $this->call([PeriodosController::class, 'guardar']), method: 'post');
         Route::add('/periodos/([0-9]+)/cerrar', $this->call([PeriodosController::class, 'cerrar']), method: 'post');
 
