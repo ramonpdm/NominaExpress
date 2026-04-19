@@ -7,12 +7,6 @@
     </div>
 </div>
 
-<div class="ne-alert ne-alert--info">
-    <strong><i class="bi bi-info-circle"></i> Recursión aplicada:</strong>
-    este reporte usa el algoritmo <code>Organigrama::costoNominaTotal()</code> y <code>Organigrama::contarEmpleados()</code>,
-    que descienden recursivamente por el árbol de departamentos sumando los empleados de cada subdepartamento.
-</div>
-
 <table class="ne-table">
     <thead>
         <tr>
