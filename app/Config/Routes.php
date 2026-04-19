@@ -47,50 +47,58 @@ class Routes
         Route::add('/api/v1/(.*?)(?:/(.*?))?(?:/(.*?))?', $this->call(), ['get', 'post', 'put', 'patch', 'delete']);
 
         /* ---- AUTH ---- */
-        Route::add('/', $this->call(DashboardController::class));
-        Route::add('/login', $this->call(AuthController::class, 'login'));
-        Route::add('/login', $this->call(AuthController::class, 'login'), method: 'post');
-        Route::add('/logout', $this->call(AuthController::class, 'logout'));
+        Route::add('/', $this->call([DashboardController::class]));
+        Route::add('/login', $this->call([AuthController::class, 'login']));
+        Route::add('/login', $this->call([AuthController::class, 'login']), method: 'post');
+        Route::add('/logout', $this->call([AuthController::class, 'logout']));
 
         /* ---- EMPLEADOS ---- */
-        Route::add('/empleados', $this->call(EmpleadosController::class));
-        Route::add('/empleados/nuevo', $this->call(EmpleadosController::class, 'nuevo'));
-        Route::add('/empleados/nuevo', $this->call(EmpleadosController::class, 'guardar'), method: 'post');
-        Route::add('/empleados/([0-9]+)', $this->call(EmpleadosController::class, 'ver'));
-        Route::add('/empleados/([0-9]+)/editar', $this->call(EmpleadosController::class, 'editar'));
-        Route::add('/empleados/([0-9]+)/editar', $this->call(EmpleadosController::class, 'actualizar'), method: 'post');
+        Route::add('/empleados', $this->call([EmpleadosController::class]));
+        Route::add('/empleados/nuevo', $this->call([EmpleadosController::class, 'nuevo']));
+        Route::add('/empleados/nuevo', $this->call([EmpleadosController::class, 'guardar']), method: 'post');
+        Route::add('/empleados/([0-9]+)', $this->call([EmpleadosController::class, 'ver']));
+        Route::add('/empleados/([0-9]+)/editar', $this->call([EmpleadosController::class, 'editar']));
+        Route::add('/empleados/([0-9]+)/editar', $this->call([EmpleadosController::class, 'actualizar']), method: 'post');
 
         /* ---- ADMINISTRACIÓN ---- */
-        Route::add('/departamentos', $this->call(DepartamentosController::class));
-        Route::add('/departamentos', $this->call(DepartamentosController::class, 'guardar'), method: 'post');
-        Route::add('/cargos', $this->call(CargosController::class));
-        Route::add('/cargos', $this->call(CargosController::class, 'guardar'), method: 'post');
-        Route::add('/conceptos', $this->call(ConceptosController::class));
-        Route::add('/conceptos', $this->call(ConceptosController::class, 'guardar'), method: 'post');
+        Route::add('/departamentos', $this->call([DepartamentosController::class]));
+        Route::add('/departamentos', $this->call([DepartamentosController::class, 'guardar']), method: 'post');
+        Route::add('/cargos', $this->call([CargosController::class]));
+        Route::add('/cargos', $this->call([CargosController::class, 'guardar']), method: 'post');
+        Route::add('/conceptos', $this->call([ConceptosController::class]));
+        Route::add('/conceptos', $this->call([ConceptosController::class, 'guardar']), method: 'post');
 
         /* ---- NÓMINA ---- */
-        Route::add('/periodos', $this->call(PeriodosController::class));
-        Route::add('/periodos', $this->call(PeriodosController::class, 'guardar'), method: 'post');
-        Route::add('/periodos/([0-9]+)/cerrar', $this->call(PeriodosController::class, 'cerrar'), method: 'post');
+        Route::add('/periodos', $this->call([PeriodosController::class]));
+        Route::add('/periodos', $this->call([PeriodosController::class, 'guardar']), method: 'post');
+        Route::add('/periodos/([0-9]+)/cerrar', $this->call([PeriodosController::class, 'cerrar']), method: 'post');
 
-        Route::add('/nomina/procesar/([0-9]+)', $this->call(NominaController::class, 'procesar'));
-        Route::add('/nomina/procesar/([0-9]+)', $this->call(NominaController::class, 'ejecutar'), method: 'post');
-        Route::add('/nomina/comprobante/([0-9]+)', $this->call(NominaController::class, 'comprobante'));
+        Route::add('/nomina/procesar/([0-9]+)', $this->call([NominaController::class, 'procesar']));
+        Route::add('/nomina/procesar/([0-9]+)', $this->call([NominaController::class, 'ejecutar']), method: 'post');
+        Route::add('/nomina/comprobante/([0-9]+)', $this->call([NominaController::class, 'comprobante']));
 
         /* ---- REPORTES ---- */
-        Route::add('/reportes/nomina', $this->call(ReportesController::class, 'nomina'));
-        Route::add('/reportes/empleados', $this->call(ReportesController::class, 'empleados'));
-        Route::add('/reportes/departamentos', $this->call(ReportesController::class, 'departamentos'));
+        Route::add('/reportes/nomina', $this->call([ReportesController::class, 'nomina']));
+        Route::add('/reportes/empleados', $this->call([ReportesController::class, 'empleados']));
+        Route::add('/reportes/departamentos', $this->call([ReportesController::class, 'departamentos']));
 
         /* ---- FALLBACK ---- */
         Route::add('/(.*?)(?:/(.*?))?(?:/(.*?))?(?:/(.*?))?', $this->call());
     }
 
-    public function call(?string $controller = null, mixed ...$args): Closure
+    public function call(array $controllerAndMethod = []): Closure
     {
-        return function ($path_controller = null, ...$path_args) use ($controller, $args) {
-            $args = $controller !== null && empty($args) ? [$path_controller, ...$path_args, ...$args] : $args;
-            return $this->getEngine()->init($controller ?? $path_controller, ...array_merge($args, $path_args));
+        return function (...$pathArgs) use ($controllerAndMethod) {
+            // If a callable is provided, just call it
+            if (!empty($controllerAndMethod)) {
+                [&$controllerClass] = $controllerAndMethod;
+                $controllerClass = new $controllerClass($this->orm);
+                return call_user_func_array($controllerAndMethod, $pathArgs);
+            }
+
+            // Otherwise, use the engine to identify the
+            // controller and method from the URL
+            return $this->getEngine()->init(...$pathArgs);
         };
     }
 
