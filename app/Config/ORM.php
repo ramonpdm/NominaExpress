@@ -46,6 +46,7 @@ class ORM
     private function initializeConfig(): void
     {
         $this->config = ORMSetup::createAttributeMetadataConfiguration([__DIR__ . '/../Entities'], $_ENV['ENVIRONMENT'] === 'development');
+        $this->config->setProxyDir(__DIR__ . '/../../storage/orm');
     }
 
     private function initializeConnection(): void
