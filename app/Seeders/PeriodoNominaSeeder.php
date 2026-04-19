@@ -38,4 +38,23 @@ class PeriodoNominaSeeder extends BaseSeeder
             ]),
         ];
     }
+
+    public function run(): void
+    {
+        $periodos = $this->data();
+        
+        // Primero persistimos los períodos
+        foreach ($periodos as $periodo) {
+            $this->entityManager->persist($periodo);
+        }
+        $this->entityManager->flush();
+
+        // Luego procesamos las nóminas para los períodos pagados
+        $calc = new \App\Services\NominaCalculator($this->entityManager);
+        foreach ($periodos as $periodo) {
+            if ($periodo->estado === EstadoPeriodo::PAGADO) {
+                $calc->procesarPeriodo($periodo);
+            }
+        }
+    }
 }
