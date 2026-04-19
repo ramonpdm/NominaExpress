@@ -1,14 +1,18 @@
-# Requisitos
+# Nomina Express
+
+Nomina Express es un sistema integral de gestión de nóminas desarrollado en PHP 8.4, utilizando Doctrine ORM y una arquitectura limpia basada en controladores, repositorios y entidades.
+
+## Requisitos
 
 - PHP 8.4
 - MySQL 8.0
 - Composer
 - Docker
 
-# Instalación
+## Instalación
 
 1. Instalar Docker.
-2. Ejecutar el siguiente comando para crear un contenedor de Docker:
+2. Ejecutar el siguiente comando para levantar el entorno de contenedores:
 
 ```bash
 docker compose up -d
@@ -20,101 +24,67 @@ docker compose up -d
 composer install
 ```
 
-4. Crear un archivo de configuración de entorno `.env` en la raíz del proyecto y agregar las siguientes variables de
-   entorno:
+4. Crear un archivo de configuración de entorno `.env` en la raíz del proyecto y agregar las variables de conexión:
 
 ```
-# Database Connection Details
-DB_DRIVER=pdo_mysql
-DB_USER=root
-DB_PASS=REPLACE_WITH_DB_PASSWORD
-DB_NAME=rentroad
-DB_HOST=REPLACE_WITH_DB_HOST
-DB_PORT=3306
-
-# Application Environment Variables
 ENVIRONMENT=development
+
+DB_DRIVER=pdo_mysql
+DB_HOST=mysql
+DB_PORT=3306
+DB_NAME=nomina_express
+DB_USER=nomina
+DB_PASS=1234
 ```
 
-> **Nota:** Asegúrate de reemplazar `REPLACE_WITH_DB_PASSWORD` y `REPLACE_WITH_DB_HOST` con la contraseña y el host de
-> tu base de datos MySQL (ejecuta `docker ps` para ver el contenedor de la base de datos y su host).
-
-5. Ejecuta el siguiente comando para crear la base de datos:
+5. Ejecutar el siguiente comando para actualizar el esquema de la base de datos e inyectar datos de prueba (seeders):
 
 ```bash
 ./cli db:update
 ```
 
-6. Acceder a RentRoad en tu navegador:
+6. Acceder a Nomina Express en tu navegador (el puerto puede variar según tu configuración de Docker, típicamente `http://localhost` o `http://127.0.0.1:3002`):
 
 ```
 http://127.0.0.1:3002
 ```
 
-# Rutas, Controladores, Entidades (Modelos) y Vistas
+## Características Principales
 
-A continuación se explica, con ejemplos y rutas a archivos del proyecto, qué son las rutas, los controladores, las entidades (modelos) y las vistas, y dónde configurarlos o extenderlos.
+- **Gestión de Empleados:** Mantenimiento completo de empleados, salarios, departamentos y cargos.
+- **Períodos de Nómina Inteligentes:** Generación automática de fechas y nombres para períodos quincenales, mensuales y semanales mediante JS.
+- **Procesamiento de Nómina:** Cálculo automático de ingresos, deducciones de ley y salarios netos. Validación estricta antes del cierre y pago de nómina.
+- **Interfaz Moderna y Dinámica:** Tablas globales con *scroll* vertical, cabeceras fijas (*sticky headers*) y ordenamiento dinámico por columnas al hacer clic.
+- **Filtros Inteligentes:** En el listado de empleados, filtros en tiempo real que combinan búsqueda de texto abierto y menús desplegables auto-generados a partir de los datos existentes.
 
-1) Rutas
+## Arquitectura del Sistema
 
-- Qué son: Las rutas mapean URLs a controladores y métodos. Determinan qué código se ejecuta cuando llega una petición HTTP.
-- Dónde se configuran: `app\Config\Routes.php`.
-- Ejemplo breve: en `app\Config\Routes.php` hay reglas como:
-  - `Route::add('/api/v1/(.*?)(?:/(.*?))?(?:/(.*?))?', ...)` — ruta automática para la API (mapea `/api/v1/vehicles`, `/api/v1/vehicles/1`, etc.).
-  - `Route::add('/', $this->call(HomeController::class));` — ruta para la página principal.
+A continuación se explica la estructura del proyecto y dónde extender sus funcionalidades.
 
-- Cómo añadir una ruta manual: edita `app\Config\Routes.php` y añade una línea similar a:
-  - `Route::add('/mis-recursos', $this->call(\App\Controllers\Frontend\MiController::class, 'index'));
+### 1. Rutas (`app/Config/Routes.php`)
+Las rutas mapean las URLs a los controladores. Determinan qué código se ejecuta cuando llega una petición HTTP.
+- Ejemplo: `Route::add('/empleados', $this->call(\App\Controllers\Frontend\EmpleadosController::class, 'index'));`
 
-2) Controladores
+### 2. Controladores (`app/Controllers/`)
+Contienen la lógica de negocio. Reciben las peticiones, coordinan con los servicios y repositorios, y devuelven una vista o redirección.
+- Ejemplo: `app/Controllers/Frontend/PeriodosController.php` maneja la apertura, validación y transición a PAGADO de las nóminas.
 
-- Qué son: Los controladores contienen la lógica que responde a una petición. Reciben parámetros (de la URL, formulario o JSON), usan repositorios/entidades para obtener o modificar datos y devuelven una vista o una respuesta JSON.
-- Dónde están:
-  - Frontend: `app\Controllers\Frontend\` (por ejemplo `app\Controllers\Frontend\VehiclesController.php`).
-  - Backend / API: `app\Controllers\Backend\` (por ejemplo `app\Controllers\Backend\VehiclesController.php`).
+### 3. Entidades y Enums (`app/Entities/`, `app/Enums/`)
+Representan el modelo de la base de datos usando atributos de Doctrine ORM (`#[ORM\Column]`, etc.).
+- Ejemplos: `Empleado.php`, `PeriodoNomina.php`, `Nomina.php`.
+- Enums: Centralizan estados fijos (ej: `EstadoPeriodo::ABIERTO`, `TipoPeriodo::QUINCENAL`).
 
-- Ejemplo (archivo real): `app\Controllers\Backend\VehiclesController.php` contiene métodos como:
-  - `findAll()` — obtiene todos los vehículos y devuelve JSON para la API (`/api/v1/vehicles`).
-  - `insert()` — crea un nuevo vehículo leyendo `$_POST` y persistiendo la entidad.
-  - `delete($id)` — elimina un vehículo por id.
+### 4. Servicios (`app/Services/`)
+Contienen lógica compleja y cálculos pesados para mantener los controladores limpios.
+- Ejemplo: `NominaCalculator.php` procesa los cálculos de deducciones de forma masiva o individual.
 
-- Añadir un controlador: crea un archivo nuevo en la carpeta adecuada, usa el namespace correspondiente y extiende `APIController` (para endpoints) o `BaseController` (para frontend). Luego registra la ruta en `app\Config\Routes.php`.
+### 5. Vistas (`app/Views/`)
+Plantillas HTML renderizadas en el servidor con PHP. 
+- Contiene componentes modulares (`inc/header.php`) y vistas específicas.
+- **JavaScript Centralizado:** Las mejoras visuales de tablas (ordenamiento, *scroll*, filtros en cliente) están centralizadas en `public/js/app.js`.
 
-3) Entidades (Modelos)
+## Cómo Extender Funcionalidades
 
-- Qué son: Las entidades representan las tablas y la estructura de la base de datos (modelo del dominio). Aquí se usan las anotaciones/atributos de Doctrine para mapear propiedades a columnas y relaciones.
-- Dónde están: `app\Entities\` (por ejemplo `app\Entities\Vehiculo.php`).
-
-- Ejemplo (archivo real): `app\Entities\Vehiculo.php`
-  - Define propiedades como `marca`, `modelo`, `ano`, `placa`, `categoria` (relación ManyToOne), `sucursal`, `costo`, etc.
-  - Incluye métodos del dominio, por ejemplo `getCosto()`, `getCostoSeguro()` y `getCostoTotal()` para calcular precios.
-
-- Modificar o crear entidades: crea/edita archivos en `app\Entities\` y usa atributos de Doctrine (p. ej. `#[ORM\Column]`, `#[ORM\ManyToOne]`). Después de cambiar el modelo, actualiza la base de datos (según el flujo del proyecto: hay comandos en `cli` para migrar/actualizar la BD).
-
-4) Vistas
-
-- Qué son: Las vistas son plantillas HTML/PHP que muestran la interfaz al usuario. Se renderizan desde un controlador frontend pasando datos (por ejemplo: listas, formularios, variables `title`).
-- Dónde están: `app\Views\` y subcarpetas por secciones (`app\Views\vehicles\index.php`, `app\Views\inc\header.php`, `app\Views\inc\footer.php`, etc.).
-
-- Ejemplo (archivo real): `app\Views\vehicles\index.php` — muestra la lista de vehículos, incluye el header/ footer y contiene JavaScript para cargar dinámicamente los vehículos desde la API (`/api/v1/vehicles`).
-  - El controlador frontend `app\Controllers\Frontend\VehiclesController.php` llama a `return $this->renderView('vehicles/index', [...])` para mostrar esta vista con datos (categorías y sucursales).
-
-5) Flujo típico (resumen)
-
-- Petición a una URL (p. ej. `GET /vehicles`)
-  1. `app\Config\Routes.php` determina qué controlador/método manejará la petición.
-  2. El controlador (`app\Controllers\Frontend\VehiclesController.php`) recopila datos (consultando repositorios/entidades) y llama a `renderView(...)` o devuelve JSON.
-  3. Si es una vista, la plantilla en `app\Views\...` se renderiza y se muestra al usuario.
-
-6) Ejemplos prácticos (rápidos)
-
-- Ver todos los vehículos en la API: `GET /api/v1/vehicles` — implementado por `app\Controllers\Backend\VehiclesController.php::findAll()`.
-- Página de vehículos: `GET /vehicles` — implementado por `app\Controllers\Frontend\VehiclesController.php::index()` y la vista `app\Views\vehicles\index.php`.
-- Crear un vehículo via API: `POST /api/v1/vehicles` — implementado por `app\Controllers\Backend\VehiclesController.php::insert()` (lee `$_POST`).
-
-7) ¿Dónde debo editar para extender funcionalidad?
-
-- Añadir una nueva URL -> `app\Config\Routes.php`.
-- Añadir la lógica para esa URL -> crear/editar un controlador en `app\Controllers\Frontend` o `app\Controllers\Backend`.
-- Definir los datos -> crear/editar entidades en `app\Entities` y repositorios en `app\Repositories`.
-- Mostrar/editar la interfaz -> crear/editar plantillas en `app\Views`.
+- **Añadir una nueva vista/ruta:** Registra la URL en `Routes.php`, crea el método en un controlador, y diseña la plantilla en `Views/`.
+- **Modificar la Base de Datos:** Actualiza los atributos PHP en los archivos dentro de `Entities/` y luego ejecuta `./cli db:update`.
+- **Añadir reglas de negocio:** Si vas a crear cálculos complejos de deducciones o reportes personalizados, añade la lógica en `Services/`.
