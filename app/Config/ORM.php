@@ -58,6 +58,7 @@ class ORM
             'dbname' => $_ENV['DB_NAME'],
             'host' => $_ENV['DB_HOST'],
             'port' => $_ENV['DB_PORT'],
+            'charset' => 'utf8mb4',
             'driverOptions' => $this->driverOptions ?? [],
         ]);
     }
