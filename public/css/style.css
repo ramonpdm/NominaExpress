@@ -109,7 +109,6 @@ h1, h2, h3, h4, h5 { color: var(--ne-primary); margin-top: 0; }
     border-radius: var(--ne-radius);
     box-shadow: var(--ne-shadow-lg);
     padding: 8px;
-    margin-top: 6px;
 }
 .ne-nav__menu a {
     display: block;
