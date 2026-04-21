@@ -11,11 +11,8 @@
     <div class="ne-login-bg">
         <div class="ne-login-card">
             <div class="ne-brand">
-                <span class="ne-brand__icon"><i class="bi bi-cash-coin"></i></span>
-                <div>
-                    <div class="ne-brand__title">Nomina Express</div>
-                    <div class="ne-brand__subtitle">TechSoft RD, S.R.L.</div>
-                </div>
+                <div class="ne-brand__title">Nomina Express</div>
+                <div class="ne-brand__subtitle">TechSoft RD, S.R.L.</div>
             </div>
 
             <?php if (!empty($error)): ?>

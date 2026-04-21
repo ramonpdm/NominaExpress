@@ -24,11 +24,8 @@
         <header class="ne-navbar">
             <div class="ne-navbar__inner">
                 <a href="/" class="ne-brand">
-                    <span class="ne-brand__icon"><i class="bi bi-cash-coin"></i></span>
-                    <div>
-                        <div class="ne-brand__title">Nomina Express</div>
-                        <div class="ne-brand__subtitle">TechSoft RD</div>
-                    </div>
+                    <div class="ne-brand__title">Nomina Express</div>
+                    <div class="ne-brand__subtitle">TechSoft RD</div>
                 </a>
 
                 <nav class="ne-nav">

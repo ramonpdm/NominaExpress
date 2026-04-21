@@ -61,19 +61,10 @@ h1, h2, h3, h4, h5 { color: var(--ne-primary); margin-top: 0; }
     padding: 12px 24px;
 }
 .ne-brand {
-    display: flex;
     align-items: center;
     gap: 12px;
     color: #fff !important;
     text-decoration: none !important;
-}
-.ne-brand__icon {
-    width: 44px; height: 44px;
-    background: var(--ne-accent);
-    color: var(--ne-primary-dark);
-    border-radius: var(--ne-radius);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 24px;
 }
 .ne-brand__title { font-weight: 900; font-size: 18px; letter-spacing: 0.3px; }
 .ne-brand__subtitle { font-size: 11px; opacity: .75; }
