@@ -1,6 +1,6 @@
 # Documentación — Nomina Express
 
-Documentación del proyecto final de **INF3220 — Algoritmos Computacionales** (Prof. Natanel Ureña Castillo, UASD, abril 2026).
+Documentación del proyecto final de **INF3220 — Algoritmos Computacionales** (Prof. Luis Alberto Adames, UASD, abril 2026).
 
 > Este directorio contiene el contexto del proyecto **antes** de la implementación. Cada archivo cubre una "naturaleza" del sistema. Mantenerlo sincronizado a medida que evolucione el código.
 

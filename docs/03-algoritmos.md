@@ -1,6 +1,6 @@
 # Algoritmos Aplicados en Nomina Express
 
-> **Objetivo académico:** demostrar dominio práctico de al menos uno de los algoritmos enseñados en la asignatura **INF3220 — Algoritmos Computacionales** (Prof. Natanel Ureña Castillo). Para enriquecer el proyecto, implementamos varios algoritmos de distintas categorías de la materia, justificando su uso real dentro del sistema.
+> **Objetivo académico:** demostrar dominio práctico de al menos uno de los algoritmos enseñados en la asignatura **INF3220 — Algoritmos Computacionales** (Prof. Luis Alberto Adames). Para enriquecer el proyecto, implementamos varios algoritmos de distintas categorías de la materia, justificando su uso real dentro del sistema.
 
 ---
 

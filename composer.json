@@ -1,6 +1,6 @@
 {
     "name": "techsoft-rd/nomina-express",
-    "description": "Sistema de Nómina — Proyecto Final INF3220 (UASD)",
+    "description": "Sistema de Nómina - Grupo 1 - Proyecto Final INF3220 (UASD)",
     "type": "project",
     "require": {
         "vlucas/phpdotenv": "^5.6",
