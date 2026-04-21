@@ -86,7 +86,11 @@ class NominaCalculator
      */
     public function calcularEmpleado(Empleado $empleado, PeriodoNomina $periodo, array $conceptos): Nomina
     {
-        $salarioBase = (float) $empleado->salario;
+        $salarioMensual = (float) $empleado->salario;
+        $tipoPeriodo = $periodo->tipo;
+        $divisor = $tipoPeriodo->divisorMensual();
+        $periodosAnio = $tipoPeriodo->periodosPorAnio();
+        $salarioBase = $salarioMensual / $divisor;
 
         $nomina = new Nomina([
             'empleado' => $empleado,
@@ -99,19 +103,22 @@ class NominaCalculator
         $totalIngresos = $salarioBase;
         $totalDeducciones = 0.0;
 
-        // Línea #1: salario base como ingreso
+        // Línea #1: salario base como ingreso (ya divido según el tipo de período)
         $nomina->detalles->add($this->nuevoDetalle(
             $nomina,
             null,
             TipoConcepto::INGRESO,
             $salarioBase,
-            $salarioBase,
-            null,
+            $salarioMensual,
+            $divisor,
             'Salario Base'
         ));
 
         foreach ($conceptos as $concepto) {
-            $monto = $this->calcularMontoConcepto($concepto, $salarioBase);
+            $monto = $concepto->codigo === 'ISR'
+                ? $this->calcularIsrPeriodo($salarioBase, $periodosAnio)
+                : $this->calcularMontoConcepto($concepto, $salarioBase);
+
             if ($monto <= 0) continue;
 
             $detalle = $this->nuevoDetalle(
@@ -142,16 +149,12 @@ class NominaCalculator
         return $nomina;
     }
 
-    /**
+/**
      * Devuelve el monto de un concepto para un salario dado.
      * Para ISR aplica la tabla progresiva dominicana sobre el anualizado.
      */
     private function calcularMontoConcepto(ConceptoNomina $c, float $salarioBase): float
     {
-        if ($c->codigo === 'ISR') {
-            return $this->calcularIsrMensual($salarioBase);
-        }
-
         return match ($c->metodo_calculo) {
             MetodoCalculo::PORCENTAJE => round($salarioBase * ((float) $c->valor / 100), 2),
             MetodoCalculo::MONTO_FIJO => round((float) $c->valor, 2),
@@ -160,12 +163,12 @@ class NominaCalculator
     }
 
     /**
-     * ISR mensual a partir del salario mensual, usando la tabla progresiva anual.
-     * Se anualiza el salario mensual × 12, se calcula el impuesto anual y se divide entre 12.
+     * Calcula el ISR para el período dividiendo el salario.base según el tipo de período.
+     * Anualiza: salarioBase × periodsPerYear, calcula ISR anual, divide por periodsPerYear.
      */
-    private function calcularIsrMensual(float $salarioMensual): float
+    private function calcularIsrPeriodo(float $salarioBase, float $periodosAnio): float
     {
-        $anual = $salarioMensual * 12;
+        $anual = $salarioBase * $periodosAnio;
 
         $impuestoAnual = 0.0;
         foreach (self::ISR_ESCALA as $tramo) {
@@ -175,7 +178,7 @@ class NominaCalculator
             }
         }
 
-        return max(0.0, round($impuestoAnual / 12, 2));
+        return max(0.0, round($impuestoAnual / $periodosAnio, 2));
     }
 
     private function nuevoDetalle(

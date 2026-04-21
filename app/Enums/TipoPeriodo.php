@@ -25,4 +25,13 @@ enum TipoPeriodo: string
             self::MENSUAL => 1.0,
         };
     }
+
+    public function periodosPorAnio(): int
+    {
+        return match ($this) {
+            self::SEMANAL => 52,
+            self::QUINCENAL => 24,
+            self::MENSUAL => 12,
+        };
+    }
 }
