@@ -72,7 +72,7 @@ class EmpleadoSeeder extends BaseSeeder
                         'departamento' => $deptos[$deptoNombre],
                         'cargo' => $cargo,
                         'salario' => $cargo->salario_base_sugerido,
-                        'fecha_ingreso' => new DateTime('202' . rand(0, 6) . '-01-15 +' . ($idx * 23) . ' days'),
+                        'fecha_ingreso' => new DateTime('202' . rand(0, 5) . '-' . sprintf('%02d', rand(1, 12)) . '-' . sprintf('%02d', rand(1, 28))),
                         'tipo_contrato' => TipoContrato::INDEFINIDO,
                         'estado' => EstadoEmpleado::ACTIVO,
                     ]);

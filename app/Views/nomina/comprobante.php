@@ -57,11 +57,22 @@ foreach ($n->detalles as $d) {
         <div>
             <h4 style="color: var(--ne-success); border-bottom: 2px solid var(--ne-success); padding-bottom: 6px;">Ingresos</h4>
             <table class="ne-table" style="box-shadow: none;">
-                <?php $totalIng = 0; foreach ($ingresos as $d): $totalIng += (float) $d->monto; ?>
+                <tr>
+                    <td><strong>Salario Base Mensual</strong></td>
+                    <td class="text-end"><strong>RD$ <?= number_format((float)$emp->salario, 2) ?></strong></td>
+                </tr>
+                <tr style="background: #F8FAFC;">
+                    <td>Salario Base del Período (<?= htmlspecialchars($n->periodo->tipo->label()) ?>)</td>
+                    <td class="text-end">RD$ <?= number_format((float)$n->salario_base, 2) ?></td>
+                </tr>
+                <?php $totalIng = (float)$n->salario_base; foreach ($ingresos as $d): ?>
+                <?php if ($d->concepto && $d->concepto->codigo !== 'SAL_BASE'): ?>
                 <tr>
                     <td><?= htmlspecialchars($d->concepto->nombre) ?></td>
                     <td class="text-end">RD$ <?= number_format((float)$d->monto, 2) ?></td>
                 </tr>
+                <?php $totalIng += (float) $d->monto; ?>
+                <?php endif; ?>
                 <?php endforeach; ?>
                 <tr style="background: #F0FDF4;">
                     <td><strong>Total Ingresos</strong></td>
@@ -73,7 +84,7 @@ foreach ($n->detalles as $d) {
         <div>
             <h4 style="color: var(--ne-danger); border-bottom: 2px solid var(--ne-danger); padding-bottom: 6px;">Deducciones</h4>
             <table class="ne-table" style="box-shadow: none;">
-                <?php $totalDed = 0; foreach ($deducciones as $d): $totalDed += (float) $d->monto; ?>
+                <?php $totalDed = 0; foreach ($deducciones as $d): ?>
                 <tr>
                     <td>
                         <?= htmlspecialchars($d->concepto->nombre) ?>
@@ -83,6 +94,7 @@ foreach ($n->detalles as $d) {
                     </td>
                     <td class="text-end">RD$ <?= number_format((float)$d->monto, 2) ?></td>
                 </tr>
+                <?php $totalDed += (float) $d->monto; ?>
                 <?php endforeach; ?>
                 <?php if (empty($deducciones)): ?>
                     <tr><td colspan="2" class="text-muted text-center">Sin deducciones</td></tr>
